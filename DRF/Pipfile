@@ -1,0 +1,10 @@
+[[source]]
+verify_ssl = true
+name = "pypi"
+url = "https://pypi.douban.com/simple/"
+
+[packages]
+django = "==1.11.7"
+djangorestframework = "*"
+pymysql = "*"
+django-redis = "*"
