@@ -1,0 +1,134 @@
+python提供了对内存的垃圾收集机制，它将不用的内存释放到？
+Python提供了对内存的垃圾收集机制，但是它将不用的内存放到内存池而不是返回给操作系统。
+Python 如何进行内存管理？
+1).对象的引用计数机制
+Python内部使用引用计数，来保持追踪内存中的对象，所有对象都有引用计数。
+引用计数增加的情况：
+一个对象分配一个新名称
+将其放入一个容器中（如列表、元组或字典）
+引用计数减少的情况：
+使用del语句对对象别名显示的销毁
+引用超出作用域或被重新赋值
+2).垃圾回收
+当一个对象的引用计数归零时，它将被垃圾收集机制处理掉。
+3).内存池机制
+Python提供了对内存的垃圾收集机制，但是它将不用的内存放到内存池而不是返回给操作系统:
+Pymalloc机制：为了加速Python的执行效率，Python引入了一个内存池机制，用于管理对小块内存的申请和释放。
+对于Python对象，如整数，浮点数和List，都有其独立的私有内存池，对象间不共享他们的内存池。
+也就是说如果你分配又释放了大量的整数，用于缓存这些整数的内存就不能再分配给浮点数。
+
+
+10.求两个日期的差数，例如2007-2-5 2007-3-6 的日期差数
+import datetime
+def days(str1,str2):
+    date1=datetime.datetime.strptime(str1[0:10],"%Y-%m-%d")
+    date2=datetime.datetime.strptime(str2[0:10],"%Y-%m-%d")
+    num=(date1-date2).days
+    return num
+
+
+21.什么是生成器（Generators）？适用的场景是什么？
+生成器（Generator）是创建迭代器的简单而强大的工具。它们写起来就像是正规的函数，只是在需要返回数据的时候使用yield语句。
+每次next()被调用时，生成器会返回它脱离的位置（它记忆语句最后一次执行的位置和所有的数据值）
+区别：生成器能做到迭代器能做的所有事,而且因为自动创建了__iter__()和__next__()方法,生成器显得特别简洁,
+而且生成器也是高效的，使用生成器表达式取代列表解析可以同时节省内存。除了创建和保存程序状态的自动方法,当发生器终结时,
+还会自动抛出StopIteration异常
+
+22.什么是异步调用？并请用一段简单的代码（不限语言）实现异步调用。
+一个可以无需等待被调用函数的返回值就让操作继续进行的方法
+
+异步(async)是相对于同步(sync)而言的，很好理解。
+同步就是一件事一件事的执行。只有前一个任务执行完毕，才能执行后一个任务
+
+from threading import Thread
+from time import sleep
+
+def async(f):
+    def wrapper(*args, **kwargs):
+        thr = Thread(target=f, args=args, kwargs=kwargs)
+        thr.start()
+    return wrapper
+
+@async
+def A():
+    sleep(3)
+    print("a function")
+
+def B():
+    print("b function")
+
+A()
+B()
+
+24.请实现如下功能（不限语言）：给定一个无序的数值序列，找出其中第N大的数值。
+a = [123,13,13,312,123,3425,233]
+b = sorted(a)
+max_N = b[-N]
+
+
+30.__new__和__init__的区别
+__new__:创建对象时调用，会返回当前对象的一个实例
+__init__:创建完对象后调用，对当前对象的一些实例初始化，无返回值
+
+31.Python中单下划线和双下划线的区别
+什么是工作区，什么是暂存区？各自的撤销命令是什么？
+
+两头下划线：Python类内置成员专用，区别用户自定义成员
+单下划线：类的普通成员
+双下划线：解析器自动转换为：_类名__成员名，代替原有成员，访问需要在原有成员名字前加上_类名。
+
+1.1工作区（Working Directory）
+指的是在PC中能看得到的创建的一个管理仓库的目录，比如我的GitMyWarehouse文件夹就是一个工作区
+1.2版本库（Repository）
+工作区有一个隐藏目录.git，这个不算工作区，而是Git的版本库。
+Git的版本库里存了很多东西，其中最重要的就是称为stage（或者叫index）的暂存区，还有Git为我们自动创建的第一个分支master，
+以及指向master的一个指针叫HEAD。
+
+59.什么是lambda函数？它有什么好处？（有python经验者回答，其他人跳过）
+lambda函数是匿名函数；使用lambda函数能够创建小型匿名函数。这种函数得名于省略了用def声明函数的标准步骤
+
+
+75.解释一下魔法方法的作用，一级他们在什么情况下会被触发？
+(1)__call__：会在 调用非静态方法时 触发
+(2)__iter__：会在迭代的时候触发
+(3)__enter__：。当with语句在开始运行时，会在上下文管理器对象上调用 __enter__ 方法。
+(4)__exit__：with语句运行结束后，会在上下文管理器对象上调用 __exit__ 方法
+
+157.python什么是全局锁
+我们所说的Python全局解释锁（GIL）简单来说就是一个互斥体（或者说锁），这样的机制只允许一个线程来控制Python解释器。
+这就意味着在任何一个时间点只有一个线程处于执行状态。GIL对执行单线程任务的程序员们来说并没什么显著影响，但是它成为了计算密集型（CPU-bound）和多线程任务的性能瓶颈。
+由于GIL即使在拥有多个CPU核的多线程框架下都只允许一次运行一个线程，所以在Python众多功能中其声誉可谓是“臭名昭著”。
+
+158.python中的多线程有何优缺点
+多进程：
+　　优点：可以用多核
+　　缺点：开销大
+多线程：
+　　优点：开销小
+缺点：不能使用多核
+
+171.列举网络爬虫所用到的网络数据包,解析包
+1、fiddle抓包
+2、chrome浏览器network
+3、火狐浏览器network
+172.你个人工作中遇到哪些问题及解决方法
+多用户访问造成拥堵
+使用缓存解决
+
+快速排序
+def quick_sort(array, left, right):
+    if left >= right:
+        return
+    low = left
+    high = right
+    key = array[low]
+    while left < right:
+        while left < right and array[right] > key:
+            right -= 1
+        array[left] = array[right]
+        while left < right and array[left] <= key:
+            left += 1
+        array[right] = array[left]
+    array[right] = key
+    quick_sort(array, low, left - 1)
+    quick_sort(array, left + 1, high)
