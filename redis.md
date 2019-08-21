@@ -381,7 +381,168 @@
 
 * 
 
+## redis 其他功能
 
+### 慢查询 
+
+* 生命周期
+
+  1. 发送命令
+  2. 排队
+  3. 执行命令
+  4. 返回结果
+
+* 两点说明
+
+  1. 慢查询发生在第3阶段
+  2. 客户端超时不一定慢查询，但慢查询是客户端超时的一个可能因素
+
+* 两个配置
+
+  1. slowlog - max - len
+
+     * 先进先出队列
+     * 固定长度
+
+     * 保存在内存内
+
+  2. slowlog - log - slower - than
+
+     * 慢查询阈值（单位：微秒）
+     * slowlog - log - slower - than = 0 ， 记录所有命令
+     * slowlog - log - slower - than < 0 ， 不记录任何命令
+
+  3. 配置方法
+
+     * 默认值
+       * config get slowlog-max-len=128
+       * config gt slowlog-log-slower-than=10000 (微秒)
+     * 修改配置文件重启（启动以后  不建议重启操作）
+     * 动态配置
+       * config set slowlog-max-len 1000
+       * config set slowlog-log-slower-than 1000
+
+* 慢查询命令
+
+  * slowlog get [n]  获取慢查询队列     n:指定条数
+  * slowlog len   获取慢查询队列长度
+  * slowlog reset    清空慢查询队列
+
+### 运维经验
+
+1. slowlog-max-len 不要设置过大，默认 10ms ，通常 设置1ms
+2. slow-log-slower-than 不要设置过小，通常设置 1000左右
+3. 理解命令生命周期
+4. 定期持久化慢查询
+
+### pipeline
+
+* 什么是流水线 （节省网络时间的开销）
+* 客户端实现
+* 与原生操作对比
+* 使用建议
+  * 注意每次pipeline 携带数据量
+  * pipeline 每次只能作用在一个Redis 节点上
+  * M操作与 pipeline 的区别
+
+### 发布订阅
+
+* 角色
+  1. 发布者
+  2. 订阅者
+  3. 频道
+* 模型 
+* API
+  * publish    发布
+    * publish  channel message      返回订阅个数
+  * subscribe   订阅
+    * subscribe  [ channel ] 一个或多个
+  * unsubscribe    取消订阅
+    * unsubscribe  [ channel ]    一个或多个
+  * 其他
+    * psubscribe  [ pattern ...  ]  订阅模式
+    * punsubscribe    退订指定的模式
+    * pubsub  channels    列出至少有一个订阅者的频道
+    * pubsub numsub  [ channel ... ]  列出给定频道订阅者的数量
+* 发布订阅消息队列
+  * 使用场景
+
+### Bitmap （节省内存方案）   type=string
+
+* 位图
+* API
+  * setbit  key  offset  value    给位图指定索引设置值
+  * getbit  key offset    获取位图指定索引的值
+  * bitcount  key  [ start  end ]    获取位图指定范围（start  end   单位为字节    如果不指定则获取全部）  位置为 1 的个数
+  * bitop  op  destkey  key [ key ... ]  做多个 Bitmap 的 and （交集）  or （并集）   not （非） xor （异或） 操作， 并将结果保存在 destkey 中
+  * bitops  key  targetBit [start]  [end]  计算位图指定范围  第一个偏移量对应的值等于 targetBit 的 位置   不指定 start end  则 获取全部
+* 独立用户统计
+  1. 使用 set 和 Bitmap
+
+### HyperLogLog (基于HyperLogLog算法)  type=string
+
+极小空间完成独立数量统计 
+
+* 新的数据结构？
+* 三个命令
+  * pfadd  key  element [ element ... ]   向 hyperloglog 添加元素
+  * pfcount   key [ key ...] 计算 hyperloglog 的独立总数
+  * pfmerge  destkey  sourcekey [ sourcekey ... ] 合并多个 hyperloglog
+* 内存消耗
+* 使用经验 
+  1. 是否能容忍错误？ 错误率 0.81%
+  2. 是否需要单条数据？
+
+### GEO  （地理信息定位）type=zset
+
+* GEO 是什么
+  * GEO（地理信息定位）：存储经纬度，计算两地距离，范围计算等
+* 5 个城市经纬度
+* 相关命令
+  * geoadd  key  longitude latitude  member [ longitude  latitude  member ... ] 增加地理位置信息
+  * geopos  key  member  [ member ... ]   获取地理位置信息
+  * geodist   key member1  member2  [ unit ]    获取两个地理位置的距离     unit:m、km、mi、ft
+  * georadius
+* 相关说明
+
+## 开发运维常见问题
+
+* fork 操作
+
+  1. 同步操作
+  2. 与内存量息息相关：内存越大，耗时越长 （与机器类型相关）
+  3. info:latest_fork_usec
+
+* 改善 fork
+
+  1. 有限使用物理机或者高效支持fork操作的虚拟化技术
+  2. 控制Redis 实力最大可用内存 maxmemory
+  3. 合理配置 Linux 内存分配策略 vm.overcommit_memory = 1
+  4. 降低 fork 频率 ：例如放宽 AOF 重写自动触发时机， 不必要的全量复制
+
+* 子进程开销和优化
+
+  1. CPU
+
+     * 开销：RDB 和 AOF 文件生成， 属于 CPU 密集型
+     * 优化： 不做CPU 绑定，不和CPU 密集型部署
+
+  2. 内存
+
+     * 开销：fork 内存开销， copy-on-write
+
+  3. 硬盘
+
+     * 开销：AOF 和 RDB 文件写入，可以结合 iostat, iotop 分析
+
+     * 不要和高硬盘负载服务部署在一起：存储服务，消息队列等
+     * no-appendfsync-on-rewrite = yes
+     * 根据写入量决定磁盘类型：例如ssd
+     * 单机多实例持久化文件目录可以考虑分盘
+
+* AOF 追加阻塞
+
+* 单机多实例部署
 
 
 
