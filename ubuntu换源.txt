@@ -1,0 +1,34 @@
+ ubuntu更换国内源
+
+1.备份原来的源
+sudo cp /etc/apt/sources.list /etc/apt/sources_init.list
+将以前的源备份一下，以防以后可以用的。
+
+2.更换源
+
+ /etc/apt/sources.list
+
+使用gedit或者vim打开文档，将下边的阿里源复制进去，然后点击保存关闭。
+
+阿里源
+
+deb http://mirrors.aliyun.com/ubuntu/ trusty main restricted universe multiverse
+deb http://mirrors.aliyun.com/ubuntu/ trusty-security main restricted universe multiverse
+deb http://mirrors.aliyun.com/ubuntu/ trusty-updates main restricted universe multiverse
+deb http://mirrors.aliyun.com/ubuntu/ trusty-proposed main restricted universe multiverse
+deb http://mirrors.aliyun.com/ubuntu/ trusty-backports main restricted universe multiverse
+deb-src http://mirrors.aliyun.com/ubuntu/ trusty main restricted universe multiverse
+deb-src http://mirrors.aliyun.com/ubuntu/ trusty-security main restricted universe multiverse
+deb-src http://mirrors.aliyun.com/ubuntu/ trusty-updates main restricted universe multiverse
+deb-src http://mirrors.aliyun.com/ubuntu/ trusty-proposed main restricted universe multiverse
+deb-src http://mirrors.aliyun.com/ubuntu/ trusty-backports main restricted universe multiverse
+3.更新
+更新源
+
+sudo apt-get update
+
+更新软件
+
+sudo apt-get upgrade
+
+
