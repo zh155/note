@@ -4,7 +4,7 @@ name = "pypi"
 url = "https://pypi.douban.com/simple/"
 
 [packages]
-django = "==1.11.7"
+django = "==2.2.24"
 djangorestframework = "*"
 pymysql = "*"
 django-redis = "*"
